@@ -16,6 +16,8 @@
 
 package com.tanvir.mscse_implementation.detection;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
@@ -27,8 +29,11 @@ import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.media.ImageReader.OnImageAvailableListener;
 import android.os.SystemClock;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.TypedValue;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -50,7 +55,7 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   private static final Logger LOGGER = new Logger();
 
   // Configuration values for the prepackaged SSD model.
-  private static final int TF_OD_API_INPUT_SIZE = 300;
+  private static final int TF_OD_API_INPUT_SIZE = getScreenWidth();
   private static final boolean TF_OD_API_IS_QUANTIZED = true;
   private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
   private static final String TF_OD_API_LABELS_FILE = "labelmap.txt";
@@ -58,7 +63,8 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   // Minimum detection confidence to track a detection.
   private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.5f;
   private static final boolean MAINTAIN_ASPECT = false;
-  private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
+
+  //private static final Size DESIRED_PREVIEW_SIZE = new Size(640, 480);
   private static final boolean SAVE_PREVIEW_BITMAP = false;
   private static final float TEXT_SIZE_DIP = 10;
   OverlayView trackingOverlay;
@@ -235,7 +241,9 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
 
   @Override
   protected Size getDesiredPreviewFrameSize() {
-    return DESIRED_PREVIEW_SIZE;
+
+
+    return new Size(getScreenWidth(),getScreenHeight());
   }
 
   // Which detection model to use: by default uses Tensorflow Object Detection API frozen
@@ -263,5 +271,13 @@ public class DetectorActivity extends CameraActivity implements OnImageAvailable
   @Override
   protected void setNumThreads(final int numThreads) {
     runInBackground(() -> detector.setNumThreads(numThreads));
+  }
+
+  public static int getScreenWidth() {
+    return Resources.getSystem().getDisplayMetrics().widthPixels;
+  }
+
+  public static int getScreenHeight() {
+    return Resources.getSystem().getDisplayMetrics().heightPixels;
   }
 }

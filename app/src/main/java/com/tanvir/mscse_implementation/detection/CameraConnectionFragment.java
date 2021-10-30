@@ -25,6 +25,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.RectF;
@@ -44,13 +45,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
 import android.util.Size;
 import android.util.SparseIntArray;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -70,7 +74,7 @@ public class CameraConnectionFragment extends Fragment {
    * The camera preview size will be chosen to be the smallest frame by pixel size capable of
    * containing a DESIRED_SIZE x DESIRED_SIZE square.
    */
-  private static final int MINIMUM_PREVIEW_SIZE = 320;
+  private static int MINIMUM_PREVIEW_SIZE  =getScreenHeight();
 
   /** Conversion from screen rotation to JPEG orientation. */
   private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -276,22 +280,26 @@ public class CameraConnectionFragment extends Fragment {
   @Override
   public View onCreateView(
       final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
+
     return inflater.inflate(layout, container, false);
   }
 
   @Override
   public void onViewCreated(final View view, final Bundle savedInstanceState) {
     textureView = (AutoFitTextureView) view.findViewById(R.id.texture);
+
   }
 
   @Override
   public void onActivityCreated(final Bundle savedInstanceState) {
     super.onActivityCreated(savedInstanceState);
+
   }
 
   @Override
   public void onResume() {
     super.onResume();
+
     startBackgroundThread();
 
     // When the screen is turned off and turned back on, the SurfaceTexture is already
@@ -331,6 +339,10 @@ public class CameraConnectionFragment extends Fragment {
       // Danger, W.R.! Attempting to use too large a preview size could  exceed the camera
       // bus' bandwidth limitation, resulting in gorgeous previews but the storage of
       // garbage capture data.
+
+
+
+
       previewSize =
           chooseOptimalSize(
               map.getOutputSizes(SurfaceTexture.class),
@@ -565,5 +577,13 @@ public class CameraConnectionFragment extends Fragment {
               })
           .create();
     }
+  }
+
+  public static int getScreenWidth() {
+    return Resources.getSystem().getDisplayMetrics().widthPixels;
+  }
+
+  public static int getScreenHeight() {
+    return Resources.getSystem().getDisplayMetrics().heightPixels;
   }
 }

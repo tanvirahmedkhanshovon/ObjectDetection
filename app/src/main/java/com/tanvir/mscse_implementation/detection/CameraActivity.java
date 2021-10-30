@@ -37,7 +37,10 @@ import android.os.Trace;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
+
+import android.util.DisplayMetrics;
 import android.util.Size;
+import android.view.Display;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -195,8 +198,18 @@ public abstract class CameraActivity extends AppCompatActivity
       // Initialize the storage bitmaps once when the resolution is known.
       if (rgbBytes == null) {
         Camera.Size previewSize = camera.getParameters().getPreviewSize();
+
+        WindowManager wm = (WindowManager)getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getMetrics(metrics);
+          previewWidth= metrics.widthPixels;
+        previewHeight = metrics.heightPixels;
+
         previewHeight = previewSize.height;
         previewWidth = previewSize.width;
+
+
         rgbBytes = new int[previewWidth * previewHeight];
         onPreviewSizeChosen(new Size(previewSize.width, previewSize.height), 90);
       }

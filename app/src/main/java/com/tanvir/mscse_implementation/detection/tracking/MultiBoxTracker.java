@@ -24,19 +24,22 @@ import android.graphics.Paint.Cap;
 import android.graphics.Paint.Join;
 import android.graphics.Paint.Style;
 import android.graphics.RectF;
+import android.speech.tts.TextToSpeech;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.util.TypedValue;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Queue;
 import com.tanvir.mscse_implementation.detection.env.BorderedText;
 import com.tanvir.mscse_implementation.detection.env.ImageUtils;
 import com.tanvir.mscse_implementation.detection.env.Logger;
 import com.tanvir.mscse_implementation.detection.tflite.Detector.Recognition;
 
-/** A tracker that handles non-max suppression and matches existing objects to new detections. */
-public class MultiBoxTracker {
+/** A tracker that handles non-max suppression and
+ * matches existing objects to new detections. */
+public class MultiBoxTracker implements TextToSpeech.OnInitListener {
   private static final float TEXT_SIZE_DIP = 18;
   private static final float MIN_SIZE = 16.0f;
   private static final int[] COLORS = {
@@ -67,6 +70,7 @@ public class MultiBoxTracker {
   private int frameWidth;
   private int frameHeight;
   private int sensorOrientation;
+  private TextToSpeech textToSpeech;
 
   public MultiBoxTracker(final Context context) {
     for (final int color : COLORS) {
@@ -79,6 +83,7 @@ public class MultiBoxTracker {
     boxPaint.setStrokeCap(Cap.ROUND);
     boxPaint.setStrokeJoin(Join.ROUND);
     boxPaint.setStrokeMiter(100);
+    textToSpeech = new TextToSpeech(context,this);
 
     textSizePx =
         TypedValue.applyDimension(
@@ -193,6 +198,10 @@ public class MultiBoxTracker {
       trackedRecognition.detectionConfidence = potential.first;
       trackedRecognition.location = new RectF(potential.second.getLocation());
       trackedRecognition.title = potential.second.getTitle();
+
+      if (!textToSpeech.isSpeaking()) {
+        textToSpeech.speak(trackedRecognition.title, TextToSpeech.QUEUE_FLUSH, null);
+      }
       trackedRecognition.color = COLORS[trackedObjects.size()];
       trackedObjects.add(trackedRecognition);
 
@@ -200,6 +209,16 @@ public class MultiBoxTracker {
         break;
       }
     }
+  }
+
+  @Override
+  public void onInit(int initStatus) {
+    if (initStatus == TextToSpeech.SUCCESS) {
+      if (textToSpeech.isLanguageAvailable(Locale.US) == TextToSpeech.LANG_AVAILABLE) textToSpeech.setLanguage(Locale.US);
+    } else if (initStatus == TextToSpeech.ERROR) {
+      // Toast.makeText(this, "Sorry! Text To Speech failed...", Toast.LENGTH_LONG).show();
+    }
+
   }
 
   private static class TrackedRecognition {
